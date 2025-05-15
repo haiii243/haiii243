@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Super Upload Robot - By Vinz</title>
+<style>
+  /* CSS langsung di sini */
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+  body {
+    margin:0; padding:0;
+    font-family: 'Orbitron', sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #00fff7;
+    display: flex;
+    height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+  }
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 10px #00fff7;
+  }
+  #upload-area {
+    border: 3px dashed #00fff7;
+    border-radius: 15px;
+    width: 320px;
+    height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #00fff7aa;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    text-align: center;
+  }
+  #upload-area.hover {
+    background-color: #00fff7aa;
+    color: #020617;
+  }
+  input[type="file"] {
+    display: none;
+  }
+  #upload-btn {
+    margin-top: 15px;
+    padding: 12px 24px;
+    background: #00fff7;
+    border: none;
+    border-radius: 25px;
+    color: #020617;
+    font-weight: bold;
+    font-size: 1.1rem;
+    cursor: pointer;
+    box-shadow: 0 0 10px #00fff7;
+    transition: transform 0.2s ease;
+  }
+  #upload-btn:hover {
+    transform: scale(1.05);
+  }
+  #result {
+    margin-top: 20px;
+    width: 320px;
+    word-wrap: break-word;
+    background: #020617cc;
+    padding: 15px;
+    border-radius: 10px;
+    font-size: 0.9rem;
+    box-shadow: 0 0 8px #00fff7;
+  }
+  #result a {
+    color: #00fff7;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  #result a:hover {
+    text-decoration: underline;
+  }
+</style>
+</head>
+<body>
+
+<h1>Super Upload Robot - By Vinz</h1>
+
+<label id="upload-area" for="file-input">
+  Drag & Drop files here or click to select
+  <input type="file" id="file-input" multiple />
+</label>
+
+<button id="upload-btn">Upload Files</button>
+
+<div id="result" style="display:none;"></div>
+
+<script>
+  const uploadArea = document.getElementById('upload-area');
+  const fileInput = document.getElementById('file-input');
+  const uploadBtn = document.getElementById('upload-btn');
+  const resultDiv = document.getElementById('result');
+  let filesToUpload = [];
+
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('hover');
+  });
+  uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('hover');
+  });
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('hover');
+    filesToUpload = Array.from(e.dataTransfer.files);
+    showFilesNames();
+  });
+  fileInput.addEventListener('change', (e) => {
+    filesToUpload = Array.from(e.target.files);
+    showFilesNames();
+  });
+
+  function showFilesNames() {
+    if (filesToUpload.length === 0) {
+      uploadArea.textContent = 'Drag & Drop files here or click to select';
+    } else {
+      uploadArea.textContent = filesToUpload.map(f => f.name).join(', ');
+    }
+  }
+
+  uploadBtn.addEventListener('click', () => {
+    if (filesToUpload.length === 0) {
+      alert('Please select files first!');
+      return;
+    }
+    uploadFiles(filesToUpload);
+  });
+
+  function uploadFiles(files) {
+    resultDiv.style.display = 'block';
+    resultDiv.innerHTML = 'Uploading...';
+
+    // Pakai https://file.io API (gratis dan tanpa backend)
+    // Upload hanya satu file saja, untuk demo ini. Bisa di extend multi file.
+    const file = files[0];
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('https://file.io/?expires=1w', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        resultDiv.innerHTML = `Upload berhasil! <br>URL: <a href="${data.link}" target="_blank">${data.link}</a>`;
+      } else {
+        resultDiv.innerHTML = 'Upload gagal, coba ulang.';
+      }
+    })
+    .catch(err => {
+      resultDiv.innerHTML = 'Error: ' + err.message;
+    });
+  }
+</script>
+
+</body>
+</html>
